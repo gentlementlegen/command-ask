@@ -1,6 +1,7 @@
 import { LogReturn, Logs } from "@ubiquity-os/ubiquity-os-logger";
+import { addCommentToIssue, addCommentToPullRequestReview } from "../handlers/add-comment";
 import { Context } from "../types";
-import { addCommentToIssue } from "../handlers/add-comment";
+
 export const logger = new Logs("debug");
 
 export function sanitizeMetadata(obj: LogReturn["metadata"]): string {
@@ -18,7 +19,11 @@ export async function bubbleUpErrorComment(context: Context, err: unknown, post 
   }
 
   if (post) {
-    await addCommentToIssue(context, `${errorMessage?.logMessage.diff}\n<!--\n${sanitizeMetadata(errorMessage?.metadata)}\n-->`);
+    if (context.eventName === "issue_comment.created") {
+      await addCommentToIssue(context, `${errorMessage?.logMessage.diff}\n<!--\n${sanitizeMetadata(errorMessage?.metadata)}\n-->`);
+    } else {
+      await addCommentToPullRequestReview(context, `${errorMessage?.logMessage.diff}\n<!--\n${sanitizeMetadata(errorMessage?.metadata)}\n-->`);
+    }
   }
 
   return errorMessage;

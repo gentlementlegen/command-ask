@@ -1,18 +1,27 @@
 import { Context } from "../types";
-import { addCommentToIssue } from "./add-comment";
+import { addCommentToIssue, addCommentToPullRequestReview } from "./add-comment";
 import { askQuestion } from "./ask-llm";
 import { CallbackResult } from "../types/proxy";
 import { bubbleUpErrorComment, sanitizeMetadata } from "../helpers/errors";
 import { LogReturn } from "@ubiquity-os/ubiquity-os-logger";
 
-export async function issueCommentCreatedCallback(context: Context<"issue_comment.created">): Promise<CallbackResult> {
+export async function pullCommentCreatedCallback(context: Context<"pull_request_review_comment.created">) {
+  const commentToPost = await getAnswerFromOpenAi(context);
+  try {
+    await addCommentToPullRequestReview(context, commentToPost);
+    return { status: 200, reason: context.logger.info("Comment posted successfully").logMessage.raw };
+  } catch (error) {
+    throw await bubbleUpErrorComment(context, error, false);
+  }
+}
+
+async function getAnswerFromOpenAi(context: Context) {
   const { logger, command, payload } = context;
   let question = "";
 
   if (payload.comment.user?.type === "Bot") {
     throw logger.error("Comment is from a bot. Skipping.");
   }
-
   if (command?.name === "ask") {
     question = command.parameters.question;
   } else if (payload.comment.body.trim().startsWith("/ask")) {
@@ -39,9 +48,17 @@ export async function issueCommentCreatedCallback(context: Context<"issue_commen
         },
       })
     );
+    return answer + metadataString;
+  } catch (error) {
+    throw await bubbleUpErrorComment(context, error, false);
+  }
+}
 
-    await addCommentToIssue(context, answer + metadataString);
-    return { status: 200, reason: logger.info("Comment posted successfully").logMessage.raw };
+export async function issueCommentCreatedCallback(context: Context<"issue_comment.created">): Promise<CallbackResult> {
+  const commentToPost = await getAnswerFromOpenAi(context);
+  try {
+    await addCommentToIssue(context, commentToPost);
+    return { status: 200, reason: context.logger.info("Comment posted successfully").logMessage.raw };
   } catch (error) {
     throw await bubbleUpErrorComment(context, error, false);
   }

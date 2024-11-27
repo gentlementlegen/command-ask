@@ -1,3 +1,5 @@
+CREATE EXTENSION vector;
+
 CREATE OR REPLACE FUNCTION find_similar_issue_ftse(
     current_id VARCHAR,
     query_text TEXT,

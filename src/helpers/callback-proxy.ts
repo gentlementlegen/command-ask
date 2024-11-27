@@ -1,4 +1,4 @@
-import { issueCommentCreatedCallback } from "../handlers/comment-created-callback";
+import { issueCommentCreatedCallback, pullCommentCreatedCallback } from "../handlers/comment-created-callback";
 import { Context, SupportedEvents } from "../types";
 import { CallbackResult, ProxyCallbacks } from "../types/proxy";
 import { bubbleUpErrorComment } from "./errors";
@@ -12,6 +12,7 @@ import { bubbleUpErrorComment } from "./errors";
  */
 const callbacks = {
   "issue_comment.created": [issueCommentCreatedCallback],
+  "pull_request_review_comment.created": [pullCommentCreatedCallback],
 } as ProxyCallbacks;
 
 export async function callCallbacks(context: Context, eventName: SupportedEvents): Promise<CallbackResult> {
