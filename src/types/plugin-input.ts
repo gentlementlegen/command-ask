@@ -17,6 +17,7 @@ export const pluginSettingsSchema = T.Object(
     }),
     openRouterBaseUrl: T.Optional(
       T.String({
+        default: "https://openrouter.ai/api/v1",
         description: "The base URL for the OpenRouter API",
         examples: ["https://openrouter.ai/api/v1", "https://api.openai.com/v1"],
       })
