@@ -54,5 +54,6 @@
         "type": "boolean"
       }
     }
-  }
+  },
+  "short_name": "gentlementlegen/command-ask@fix/retry"
 }
